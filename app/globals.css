@@ -278,6 +278,65 @@ a {
   margin-top: 14px;
 }
 
+.campaign-summary-card {
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid rgba(125, 211, 252, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(167, 139, 250, 0.16), transparent 30%),
+    linear-gradient(180deg, rgba(125, 211, 252, 0.08), rgba(255, 255, 255, 0.03));
+  box-shadow: var(--shadow);
+}
+
+.campaign-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.campaign-summary-block {
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(7, 17, 31, 0.35);
+}
+
+.campaign-summary-label {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.campaign-summary-value {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.summary-list-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.summary-chip-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(164, 184, 212, 0.12);
+}
+
+.badge-success {
+  color: var(--success);
+  border-color: rgba(134, 239, 172, 0.28);
+  background: rgba(134, 239, 172, 0.08);
+}
+
 @media (max-width: 720px) {
   .page-shell,
   .page-shell-wide {

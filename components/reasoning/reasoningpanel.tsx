@@ -13,7 +13,7 @@ export default function ReasoningPanel({ context }: ReasoningPanelProps) {
   const assumptions = context ? Array.from(new Set(context.trace.assumptions)) : [];
 
   return (
-    <SectionCard>
+    <SectionCard id="reasoning-panel">
       <PageHeader
         eyebrow="Reasoning panel"
         title="The orchestration trace makes each decision visible"
