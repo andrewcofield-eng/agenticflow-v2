@@ -11,6 +11,7 @@ type GenerateCampaignContentInput = {
   cta?: string;
   channels: string[];
   temperatureBoost?: number;
+  throwOnError?: boolean;
 };
 
 type GeneratedContentResult = {
@@ -25,6 +26,10 @@ export async function generateCampaignContent(input: GenerateCampaignContentInpu
   const temperature = Math.min(1.1, 0.7 + (input.temperatureBoost ?? 0));
 
   if (!apiKey) {
+    if (input.throwOnError) {
+      throw new Error("OPENAI_API_KEY is not configured.");
+    }
+
     return {
       content: buildPlaceholderCampaignContent(input, { temperature }),
       source: "placeholder",
@@ -32,8 +37,9 @@ export async function generateCampaignContent(input: GenerateCampaignContentInpu
     };
   }
 
+  const client = new OpenAI({ apiKey });
+
   try {
-    const client = new OpenAI({ apiKey });
     const completion = await client.chat.completions.create({
       model,
       temperature,
@@ -78,6 +84,10 @@ export async function generateCampaignContent(input: GenerateCampaignContentInpu
       source: "ai-generated",
     };
   } catch (error) {
+    if (input.throwOnError) {
+      throw error;
+    }
+
     return {
       content: buildPlaceholderCampaignContent(input, { temperature, model }),
       source: "placeholder",
