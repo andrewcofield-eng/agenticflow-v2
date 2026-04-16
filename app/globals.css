@@ -238,6 +238,50 @@ a {
   min-height: 180px;
 }
 
+.workflow-accordion {
+  display: grid;
+  gap: 14px;
+}
+
+.workflow-accordion-item {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.workflow-accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.workflow-accordion-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.workflow-chevron {
+  min-width: 24px;
+  color: var(--muted);
+  font-size: 24px;
+  line-height: 1;
+  text-align: center;
+}
+
+.workflow-accordion-content {
+  padding: 0 18px 18px;
+}
+
 .workflow-state,
 .status-dot {
   display: inline-flex;
