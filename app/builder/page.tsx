@@ -8,10 +8,11 @@ import ResultsDashboardShell from "@/components/results/resultsdashboardshell";
 import SourceDataPanelsShell from "@/components/source-panels/sourcedatapanelsshell";
 import WorkflowVisualizationShell from "@/components/workflow/workflowvisualizationshell";
 import { campaignGoals, campaignSegments, channelThemes, productFocuses } from "@/lib/data/mock-data/campaign-presets";
-import type { CampaignInput } from "@/lib/types/campaign";
+import type { CampaignInput, GeneratedContent } from "@/lib/types/campaign";
 import type { CampaignContext } from "@/lib/types/orchestrator";
 import type { WorkflowStepResult } from "@/lib/types/workflow";
-import { runAgenticFlowOrchestrator } from "@/lib/workflow/orchestrator";
+import { buildPlaceholderContent } from "@/lib/workflow/steps/content-generator-agent";
+import { finalizeCampaignContext, runOrchestratorUntilPendingContent } from "@/lib/workflow/orchestrator";
 
 const initialInput: CampaignInput = {
   campaignGoal: campaignGoals[0],
@@ -26,6 +27,7 @@ export default function BuilderPage() {
   const [context, setContext] = useState<CampaignContext | null>(null);
   const [revealedSteps, setRevealedSteps] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [isGeneratingContent, setIsGeneratingContent] = useState(false);
 
   const visibleSteps = useMemo<WorkflowStepResult[]>(() => {
     if (!context) return [];
@@ -36,6 +38,7 @@ export default function BuilderPage() {
     if (!context || !isRunning) return;
 
     if (revealedSteps >= context.trace.workflowSteps.length) {
+      if (isGeneratingContent) return;
       setIsRunning(false);
       return;
     }
@@ -45,13 +48,62 @@ export default function BuilderPage() {
     }, 350);
 
     return () => window.clearTimeout(timer);
-  }, [context, isRunning, revealedSteps]);
+  }, [context, isGeneratingContent, isRunning, revealedSteps]);
 
-  function handleGenerate() {
-    const nextContext = runAgenticFlowOrchestrator(formValue);
-    setContext(nextContext);
+  async function handleGenerate() {
+    const pendingContext = runOrchestratorUntilPendingContent(formValue);
+    setContext(pendingContext);
     setRevealedSteps(0);
     setIsRunning(true);
+    setIsGeneratingContent(true);
+
+    const finalizedContext = await generateContentForContext(pendingContext);
+    setContext(finalizedContext);
+    setIsGeneratingContent(false);
+  }
+
+  async function handleRegenerateContent() {
+    if (!context) return;
+
+    setIsGeneratingContent(true);
+    const finalizedContext = await generateContentForContext(context, 0.1);
+    setContext(finalizedContext);
+    setIsGeneratingContent(false);
+    setIsRunning(true);
+  }
+
+  async function generateContentForContext(baseContext: CampaignContext, temperatureBoost = 0) {
+    const fallbackContent: GeneratedContent = {
+      ...buildPlaceholderContent(baseContext),
+      temperature: 0.7 + temperatureBoost,
+    };
+
+    try {
+      const response = await fetch("/api/content-generator", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          objective: baseContext.input.campaignGoal,
+          audience: baseContext.selections.selectedAudience,
+          products: baseContext.selections.selectedProducts,
+          strategy: baseContext.outputs.strategy,
+          cta: baseContext.outputs.strategy?.ctaRecommendation,
+          channels: baseContext.outputs.strategy?.suggestedChannelMix ?? [],
+          temperatureBoost,
+        }),
+      });
+
+      if (!response.ok) {
+        return finalizeCampaignContext(baseContext, fallbackContent);
+      }
+
+      const payload = await response.json();
+      return finalizeCampaignContext(baseContext, payload.content ?? fallbackContent);
+    } catch {
+      return finalizeCampaignContext(baseContext, fallbackContent);
+    }
   }
 
   return (
@@ -72,8 +124,14 @@ export default function BuilderPage() {
           steps={visibleSteps}
           isRunning={isRunning}
           currentStepIndex={Math.max(0, visibleSteps.length - 1)}
+          isGeneratingContent={isGeneratingContent}
         />
-        <ResultsDashboardShell context={context && !isRunning ? context : null} />
+        <ResultsDashboardShell
+          context={context}
+          isGeneratingContent={isGeneratingContent}
+          onRegenerateContent={context ? handleRegenerateContent : undefined}
+          canRegenerateContent={Boolean(context?.outputs.generatedContent)}
+        />
         <ReasoningPanel context={context && !isRunning ? context : null} />
       </div>
     </main>

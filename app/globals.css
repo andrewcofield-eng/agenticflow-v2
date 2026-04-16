@@ -95,7 +95,7 @@ a {
 
 .section-card,
 .intro-card {
-  padding: 24px;
+  padding: 28px;
 }
 
 .hero-card {
@@ -154,10 +154,51 @@ a {
   color: var(--muted);
   background: rgba(255, 255, 255, 0.03);
   font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .badge-strong {
   color: var(--text);
+}
+
+.badge-subtle {
+  color: #d7e6fb;
+  border-color: rgba(164, 184, 212, 0.24);
+  background: rgba(164, 184, 212, 0.08);
+}
+
+.badge-info {
+  color: var(--accent);
+  border-color: rgba(125, 211, 252, 0.28);
+  background: rgba(125, 211, 252, 0.08);
+}
+
+.badge-warning {
+  color: var(--warning);
+  border-color: rgba(252, 211, 77, 0.26);
+  background: rgba(252, 211, 77, 0.08);
+}
+
+.badge-tag {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.loading-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.loading-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid rgba(125, 211, 252, 0.2);
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
 }
 
 .cta-row {
@@ -176,6 +217,7 @@ a {
   padding: 0 18px;
   border-radius: 999px;
   font-weight: 700;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
 .button {
@@ -186,6 +228,27 @@ a {
 .button-secondary {
   border: 1px solid var(--border);
   color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.button-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button:hover,
+.button-secondary:hover,
+.workflow-accordion-trigger:hover,
+.reasoning-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.button-elevated {
+  box-shadow: 0 14px 30px rgba(125, 211, 252, 0.18);
+}
+
+.button-secondary-elevated {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
 .field-stack {
@@ -231,7 +294,11 @@ a {
   border-radius: 18px;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.03);
-  padding: 18px;
+  padding: 20px;
+}
+
+.result-card {
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .workflow-card {
@@ -246,8 +313,13 @@ a {
 .workflow-accordion-item {
   border-radius: 18px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
   overflow: hidden;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.workflow-accordion-item:hover {
+  border-color: rgba(125, 211, 252, 0.24);
 }
 
 .workflow-accordion-trigger {
@@ -262,6 +334,27 @@ a {
   color: var(--text);
   text-align: left;
   cursor: pointer;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.workflow-step-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.workflow-step-number {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  background: rgba(125, 211, 252, 0.08);
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .workflow-accordion-meta {
@@ -276,10 +369,38 @@ a {
   font-size: 24px;
   line-height: 1;
   text-align: center;
+  transition: transform 180ms ease, color 180ms ease;
+}
+
+.workflow-accordion-trigger[aria-expanded="true"] .workflow-chevron,
+.reasoning-toggle[aria-expanded="true"] .workflow-chevron {
+  color: var(--accent);
+  transform: scale(1.08);
 }
 
 .workflow-accordion-content {
-  padding: 0 18px 18px;
+  padding: 0 18px 18px 68px;
+  border-top: 1px solid rgba(164, 184, 212, 0.1);
+}
+
+.reasoning-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(164, 184, 212, 0.18);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.025));
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.reasoning-toggle:hover {
+  border-color: rgba(167, 139, 250, 0.28);
 }
 
 .workflow-state,
@@ -323,13 +444,18 @@ a {
 }
 
 .campaign-summary-card {
-  padding: 24px;
+  padding: 28px;
   border-radius: 24px;
   border: 1px solid rgba(125, 211, 252, 0.26);
   background:
     radial-gradient(circle at top right, rgba(167, 139, 250, 0.16), transparent 30%),
     linear-gradient(180deg, rgba(125, 211, 252, 0.08), rgba(255, 255, 255, 0.03));
   box-shadow: var(--shadow);
+}
+
+.campaign-summary-card h3 {
+  font-size: 28px;
+  line-height: 1.2;
 }
 
 .campaign-summary-grid {
@@ -359,6 +485,15 @@ a {
   line-height: 1.5;
 }
 
+.workflow-accordion-trigger h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.reasoning-toggle h3 {
+  font-size: 18px;
+}
+
 .summary-list-stack {
   display: grid;
   gap: 10px;
@@ -381,6 +516,12 @@ a {
   background: rgba(134, 239, 172, 0.08);
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 720px) {
   .page-shell,
   .page-shell-wide {
@@ -389,5 +530,29 @@ a {
 
   .hero {
     padding-top: 40px;
+  }
+
+  .section-card,
+  .intro-card,
+  .campaign-summary-card,
+  .result-card,
+  .mini-card,
+  .reasoning-toggle,
+  .workflow-accordion-trigger {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .workflow-accordion-content {
+    padding-left: 18px;
+  }
+
+  .workflow-step-heading {
+    align-items: flex-start;
+  }
+
+  .workflow-step-number {
+    width: 32px;
+    height: 32px;
   }
 }

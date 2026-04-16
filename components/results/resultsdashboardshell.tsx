@@ -7,6 +7,9 @@ import StrategyCard from "./strategycard";
 
 type ResultsDashboardShellProps = {
   context: CampaignContext | null;
+  isGeneratingContent?: boolean;
+  onRegenerateContent?: () => void;
+  canRegenerateContent?: boolean;
 };
 
 function CampaignSummaryCard({ context }: { context: CampaignContext }) {
@@ -40,7 +43,7 @@ function CampaignSummaryCard({ context }: { context: CampaignContext }) {
             {topProducts.map((product) => (
               <div key={product.id} className="summary-chip-card">
                 <span>{product.name}</span>
-                <span className="badge">{product.category}</span>
+                <span className="badge badge-tag">{product.category}</span>
               </div>
             ))}
           </div>
@@ -52,7 +55,7 @@ function CampaignSummaryCard({ context }: { context: CampaignContext }) {
             {topAssets.map((asset) => (
               <div key={asset.id} className="summary-chip-card">
                 <span>{asset.title}</span>
-                <span className="badge">{asset.assetType}</span>
+                <span className="badge badge-tag">{asset.assetType}</span>
               </div>
             ))}
           </div>
@@ -60,14 +63,14 @@ function CampaignSummaryCard({ context }: { context: CampaignContext }) {
       </div>
 
       <div className="cta-row" style={{ marginTop: 20 }}>
-        <a className="button" href="#results-details">View Full Details</a>
-        <a className="button-secondary" href="#reasoning-panel">View Reasoning</a>
+        <a className="button button-elevated" href="#results-details">View Full Details</a>
+        <a className="button-secondary button-secondary-elevated" href="#reasoning-panel">View Reasoning</a>
       </div>
     </div>
   );
 }
 
-export default function ResultsDashboardShell({ context }: ResultsDashboardShellProps) {
+export default function ResultsDashboardShell({ context, isGeneratingContent = false, onRegenerateContent, canRegenerateContent = false }: ResultsDashboardShellProps) {
   return (
     <SectionCard id="results-dashboard">
       <PageHeader
@@ -115,7 +118,12 @@ export default function ResultsDashboardShell({ context }: ResultsDashboardShell
             </div>
 
             <StrategyCard strategy={context.outputs.strategy} />
-            <ContentDraftCard content={context.outputs.generatedContent} />
+            <ContentDraftCard
+              content={context.outputs.generatedContent}
+              isLoading={isGeneratingContent}
+              onRegenerate={onRegenerateContent}
+              canRegenerate={canRegenerateContent}
+            />
             <ReviewStatusCard reviewSummary={context.outputs.reviewSummary} />
           </div>
         </div>

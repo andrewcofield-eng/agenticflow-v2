@@ -14,6 +14,7 @@ type WorkflowVisualizationShellProps = {
   steps: WorkflowStepResult[];
   isRunning: boolean;
   currentStepIndex: number;
+  isGeneratingContent?: boolean;
 };
 
 type WorkflowStepDefinition = {
@@ -42,7 +43,7 @@ type ContentStepData = {
   generatedContent: {
     emailSubject: string;
     socialPost: string;
-    paidAdHeadline: string;
+    adHeadline: string;
   };
 };
 
@@ -95,13 +96,16 @@ export default function WorkflowVisualizationShell({ steps, isRunning, currentSt
                 onClick={() => setExpandedStepId((current) => current === definition.stepId ? null : definition.stepId)}
                 aria-expanded={isExpanded}
               >
-                <div>
-                  <p className="eyebrow">Step {index + 1}</p>
-                  <h3>{definition.stepName}</h3>
+                <div className="workflow-step-heading">
+                  <span className="workflow-step-number">{index + 1}</span>
+                  <div>
+                    <p className="eyebrow">Step {index + 1}</p>
+                    <h3>{definition.stepName}</h3>
+                  </div>
                 </div>
 
                 <div className="workflow-accordion-meta">
-                  <span className={`badge ${isComplete ? "badge-success" : ""}`}>{isComplete ? "✓ Complete" : statusLabel}</span>
+                  <span className={`badge ${isComplete ? "badge-success" : isActive ? "badge-info" : "badge-subtle"}`}>{isComplete ? "✓ Complete" : statusLabel}</span>
                   <span className="workflow-chevron">{isExpanded ? "−" : "+"}</span>
                 </div>
               </button>
@@ -173,10 +177,18 @@ function renderStepDetails(stepId: string, step?: WorkflowStepResult) {
     case "content-generator-agent": {
       const data = step.data as ContentStepData;
       return (
-        <div className="badge-row">
-          <span className={`badge ${data.generatedContent?.emailSubject ? "badge-success" : ""}`}>Email ✓</span>
-          <span className={`badge ${data.generatedContent?.socialPost ? "badge-success" : ""}`}>Social ✓</span>
-          <span className={`badge ${data.generatedContent?.paidAdHeadline ? "badge-success" : ""}`}>Ad ✓</span>
+        <div className="summary-list-stack">
+          {step.status === "running" ? (
+            <div className="loading-inline">
+              <span className="loading-spinner" />
+              <p className="muted" style={{ margin: 0 }}>Generating content with the configured OpenAI service...</p>
+            </div>
+          ) : null}
+          <div className="badge-row">
+            <span className={`badge ${data.generatedContent?.emailSubject ? "badge-success" : ""}`}>Email ✓</span>
+            <span className={`badge ${data.generatedContent?.socialPost ? "badge-success" : ""}`}>Social ✓</span>
+            <span className={`badge ${data.generatedContent?.adHeadline ? "badge-success" : ""}`}>Ad ✓</span>
+          </div>
         </div>
       );
     }

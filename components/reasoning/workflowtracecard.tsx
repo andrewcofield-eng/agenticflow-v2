@@ -15,7 +15,7 @@ export default function WorkflowTraceCard({ step }: WorkflowTraceCardProps) {
           <p className="eyebrow">{step.stepName}</p>
           <h3>{step.outputSummary[0] ?? "No output yet"}</h3>
         </div>
-        <span className="badge">{step.confidence ?? "n/a"} confidence</span>
+        <span className={`badge ${confidenceBadgeClass(step.confidence)}`}>{step.confidence ?? "n/a"} confidence</span>
       </div>
 
       <p className="muted">Why this step landed here:</p>
@@ -41,4 +41,11 @@ export default function WorkflowTraceCard({ step }: WorkflowTraceCardProps) {
 
 function uniqueStrings(values: string[]) {
   return Array.from(new Set(values));
+}
+
+function confidenceBadgeClass(confidence?: WorkflowStepResult["confidence"]) {
+  if (confidence === "high") return "badge-success";
+  if (confidence === "medium") return "badge-warning";
+  if (confidence === "low") return "badge-subtle";
+  return "badge-subtle";
 }

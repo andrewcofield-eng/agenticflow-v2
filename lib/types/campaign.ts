@@ -19,8 +19,12 @@ export type GeneratedContent = {
   emailSubject: string;
   emailBody: string;
   socialPost: string;
-  paidAdHeadline: string;
-  paidAdCopy: string;
+  adHeadline: string;
+  adCopy: string;
+  source?: "ai-generated" | "placeholder";
+  model?: string;
+  temperature?: number;
+  tokenEstimate?: number;
 };
 
 export type ReviewSummary = {
