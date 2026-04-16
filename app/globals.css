@@ -211,6 +211,18 @@ a {
   color: var(--text);
 }
 
+.field select option {
+  color: #07111f;
+  background: #f5f9ff;
+}
+
+.field select:focus,
+.field input:focus,
+.field textarea:focus {
+  outline: 2px solid rgba(125, 211, 252, 0.35);
+  outline-offset: 2px;
+}
+
 .stat-card,
 .panel-card,
 .workflow-card,
@@ -258,6 +270,12 @@ a {
   border-radius: 18px;
   border: 1px dashed var(--border);
   background: rgba(125, 211, 252, 0.05);
+}
+
+.summary-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 @media (max-width: 720px) {

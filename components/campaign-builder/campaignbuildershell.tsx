@@ -1,4 +1,3 @@
-import CampaignFormShell from "./campaignformshell";
 import PageHeader from "@/components/ui/pageheader";
 import SectionCard from "@/components/ui/sectioncard";
 
@@ -8,9 +7,8 @@ export default function CampaignBuilderShell() {
       <PageHeader
         eyebrow="Campaign builder"
         title="Set up the campaign brief"
-        description="This shell captures the key strategy inputs that will later feed the supervised workflow."
+        description="Set the campaign goal, segment, product focus, and theme, then let the AgenticFlow Orchestrator assemble a supervised campaign package from mock context."
       />
-      <CampaignFormShell />
     </SectionCard>
   );
 }

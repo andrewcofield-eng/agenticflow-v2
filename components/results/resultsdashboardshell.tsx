@@ -1,68 +1,75 @@
-import ResultSectionCard from "./resultsectioncard";
 import PageHeader from "@/components/ui/pageheader";
 import SectionCard from "@/components/ui/sectioncard";
+import type { CampaignContext } from "@/lib/types/orchestrator";
+import ContentDraftCard from "./contentdraftcard";
+import ReviewStatusCard from "./reviewstatuscard";
+import StrategyCard from "./strategycard";
 
-export default function ResultsDashboardShell() {
+type ResultsDashboardShellProps = {
+  context: CampaignContext | null;
+};
+
+export default function ResultsDashboardShell({ context }: ResultsDashboardShellProps) {
   return (
     <SectionCard>
       <PageHeader
         eyebrow="Results dashboard"
-        title="Campaign package output shell"
-        description="This section previews how recommendations, rationale, generated content, and human review prompts will be organized."
+        title="Campaign package assembled by the orchestrator"
+        description="This dashboard shows the selected audience, products, assets, strategy, draft content, and final review state."
       />
 
-      <div className="results-grid">
-        <ResultSectionCard
-          title="Campaign summary"
-          items={[
-            "Campaign name placeholder",
-            "Objective placeholder",
-            "Target audience placeholder",
-            "Audience rationale placeholder",
-          ]}
-        />
-        <ResultSectionCard
-          title="Product recommendations"
-          items={[
-            "1 to 3 recommended products",
-            "Why each product fits",
-            "Expected use-case alignment",
-          ]}
-        />
-        <ResultSectionCard
-          title="Asset recommendations"
-          items={[
-            "2 to 4 recommended assets",
-            "Why each asset fits",
-            "Channel suitability notes",
-          ]}
-        />
-        <ResultSectionCard
-          title="Messaging strategy"
-          items={[
-            "Value proposition",
-            "Campaign angle",
-            "CTA recommendation",
-            "Suggested channel mix",
-          ]}
-        />
-        <ResultSectionCard
-          title="Generated content"
-          items={[
-            "Email subject line and body",
-            "LinkedIn or social draft",
-            "Paid ad headline and supporting copy",
-          ]}
-        />
-        <ResultSectionCard
-          title="Human review and explainability"
-          items={[
-            "Why selections were made",
-            "Assumptions and gaps",
-            "What a human should review next",
-          ]}
-        />
-      </div>
+      {!context ? (
+        <div className="mini-card">
+          <p className="muted">Generate a campaign to populate the dashboard.</p>
+        </div>
+      ) : (
+        <div className="page-stack">
+          <div className="summary-box">
+            <p className="eyebrow">At a glance</p>
+            <div className="badge-row">
+              <span className="badge">Input focus: {context.input.selectedProductOrCategory}</span>
+              <span className="badge">Products: {context.selections.selectedProducts.length}</span>
+              <span className="badge">Assets: {context.selections.selectedAssets.length}</span>
+              <span className="badge">Status: Draft ready for human review</span>
+            </div>
+          </div>
+
+          <div className="results-grid">
+          <div className="result-card">
+            <h3>Campaign summary</h3>
+            <ul className="list">
+              <li><strong>Campaign name:</strong> {context.outputs.strategy?.campaignName ?? "Not generated"}</li>
+              <li><strong>Objective:</strong> {context.input.campaignGoal}</li>
+              <li><strong>Selected product/category input:</strong> {context.input.selectedProductOrCategory}</li>
+              <li><strong>Target audience:</strong> {context.selections.selectedAudience?.name ?? "Not selected"}</li>
+              <li><strong>Status:</strong> Draft ready for human review</li>
+            </ul>
+          </div>
+
+          <div className="result-card">
+            <h3>Recommended products ({context.selections.selectedProducts.length})</h3>
+            <ul className="list">
+              {context.selections.selectedProducts.map((product) => (
+                <li key={product.id}>{product.name} ({product.category})</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="result-card">
+            <h3>Recommended assets ({context.selections.selectedAssets.length})</h3>
+            <ul className="list">
+              {context.selections.selectedAssets.map((asset) => (
+                <li key={asset.id}>{asset.title} ({asset.assetType})</li>
+              ))}
+            </ul>
+          </div>
+
+          <StrategyCard strategy={context.outputs.strategy} />
+          <ContentDraftCard content={context.outputs.generatedContent} />
+          <ReviewStatusCard reviewSummary={context.outputs.reviewSummary} />
+          </div>
+        </div>
+      )}
     </SectionCard>
   );
 }
