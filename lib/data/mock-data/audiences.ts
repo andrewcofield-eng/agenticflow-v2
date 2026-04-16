@@ -1,0 +1,40 @@
+import type { Audience } from "@/lib/types/audience";
+
+export const mockAudiences: Audience[] = [
+  {
+    id: "aud-001",
+    name: "Warm mid-market operations leads",
+    lifecycleStage: "Marketing Qualified",
+    description: "Engaged buyers exploring workflow and reporting improvement tools.",
+    size: "12,400",
+    engagementLevel: "High",
+    intentSignals: ["Viewed pricing", "Downloaded comparison guide"],
+    estimatedValue: "$18K average deal",
+    region: "North America",
+    productInterestTags: ["automation", "analytics", "efficiency"],
+  },
+  {
+    id: "aud-002",
+    name: "Existing customers with expansion potential",
+    lifecycleStage: "Customer",
+    description: "Current accounts showing interest in adjacent products and premium features.",
+    size: "3,100",
+    engagementLevel: "Medium",
+    intentSignals: ["Product webinar attendee", "Upsell nurture click"],
+    estimatedValue: "$9K expansion value",
+    region: "US and UK",
+    productInterestTags: ["upgrade", "bundles", "efficiency"],
+  },
+  {
+    id: "aud-003",
+    name: "Retail marketers preparing seasonal launches",
+    lifecycleStage: "Sales Accepted",
+    description: "Teams planning coordinated launch campaigns with visual and promotional assets.",
+    size: "6,800",
+    engagementLevel: "High",
+    intentSignals: ["Seasonal campaign page views", "Creative asset interest"],
+    estimatedValue: "$14K average deal",
+    region: "North America and EMEA",
+    productInterestTags: ["seasonal", "campaign planning", "creative ops"],
+  },
+];

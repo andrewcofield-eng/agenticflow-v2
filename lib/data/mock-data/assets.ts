@@ -1,0 +1,40 @@
+import type { Asset } from "@/lib/types/asset";
+
+export const mockAssets: Asset[] = [
+  {
+    id: "ast-001",
+    title: "Executive launch overview deck",
+    assetType: "Presentation",
+    tags: ["launch", "executive", "strategy"],
+    associatedProducts: ["LaunchPilot Campaign Kit"],
+    audienceFit: ["Retail marketers preparing seasonal launches"],
+    channelSuitability: ["Sales enablement", "Email follow-up"],
+    toneStyle: "Strategic",
+    usageStatus: "Approved",
+    campaignFit: ["Awareness", "Launch"],
+  },
+  {
+    id: "ast-002",
+    title: "Performance proof point infographic",
+    assetType: "Infographic",
+    tags: ["results", "analytics", "social"],
+    associatedProducts: ["InsightFlow Analytics Suite"],
+    audienceFit: ["Warm mid-market operations leads"],
+    channelSuitability: ["LinkedIn", "Paid social", "Landing page"],
+    toneStyle: "Confident",
+    usageStatus: "Approved",
+    campaignFit: ["Demand gen", "Mid-funnel"],
+  },
+  {
+    id: "ast-003",
+    title: "Customer expansion case study",
+    assetType: "Case Study",
+    tags: ["customer", "expansion", "proof"],
+    associatedProducts: ["ExpandIQ Bundle"],
+    audienceFit: ["Existing customers with expansion potential"],
+    channelSuitability: ["Email", "Sales follow-up", "Web"],
+    toneStyle: "Practical",
+    usageStatus: "Approved",
+    campaignFit: ["Upsell", "Retention"],
+  },
+];

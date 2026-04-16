@@ -1,0 +1,43 @@
+import type { Product } from "@/lib/types/product";
+
+export const mockProducts: Product[] = [
+  {
+    id: "prd-001",
+    name: "InsightFlow Analytics Suite",
+    category: "Analytics",
+    subcategory: "Marketing Intelligence",
+    features: ["Audience scoring", "Campaign performance dashboards"],
+    benefits: ["Sharper targeting", "Faster planning"],
+    priceTier: "Premium",
+    targetUseCase: "Growth teams needing better segmentation insight",
+    audienceFitTags: ["operations", "mid-market", "analytics"],
+    messagingThemes: ["clarity", "performance", "decision confidence"],
+    lifecycleStatus: "Active",
+  },
+  {
+    id: "prd-002",
+    name: "LaunchPilot Campaign Kit",
+    category: "Campaign Ops",
+    subcategory: "Launch Management",
+    features: ["Launch templates", "Cross-channel planning"],
+    benefits: ["Faster go-to-market", "Better coordination"],
+    priceTier: "Standard",
+    targetUseCase: "Teams launching product or seasonal campaigns",
+    audienceFitTags: ["retail", "marketing", "launch"],
+    messagingThemes: ["speed", "alignment", "readiness"],
+    lifecycleStatus: "New",
+  },
+  {
+    id: "prd-003",
+    name: "ExpandIQ Bundle",
+    category: "Revenue Growth",
+    subcategory: "Expansion",
+    features: ["Expansion playbooks", "Customer fit triggers"],
+    benefits: ["Higher retention", "Smarter upsell paths"],
+    priceTier: "Premium",
+    targetUseCase: "Existing customer growth and cross-sell campaigns",
+    audienceFitTags: ["customers", "upsell", "retention"],
+    messagingThemes: ["growth", "value realization", "momentum"],
+    lifecycleStatus: "Active",
+  },
+];
