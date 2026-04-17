@@ -44,6 +44,7 @@ type ContentStepData = {
     emailSubject: string;
     socialPost: string;
     adHeadline: string;
+    errorMessage?: string;
   };
 };
 
@@ -82,7 +83,8 @@ export default function WorkflowVisualizationShell({ steps, isRunning, currentSt
           const isExpanded = expandedStepId === definition.stepId;
           const isActive = activeStepId === definition.stepId;
           const isComplete = step?.status === "complete";
-          const statusLabel = isActive ? "Running" : isComplete ? "Complete" : "Pending";
+          const isError = step?.status === "error";
+          const statusLabel = isError ? "Generation failed" : isActive ? "Running" : isComplete ? "Complete" : "Pending";
 
           return (
             <div
@@ -105,7 +107,7 @@ export default function WorkflowVisualizationShell({ steps, isRunning, currentSt
                 </div>
 
                 <div className="workflow-accordion-meta">
-                  <span className={`badge ${isComplete ? "badge-success" : isActive ? "badge-info" : "badge-subtle"}`}>{isComplete ? "✓ Complete" : statusLabel}</span>
+                  <span className={`badge ${isError ? "badge-warning" : isComplete ? "badge-success" : isActive ? "badge-info" : "badge-subtle"}`}>{isError ? "Generation failed" : isComplete ? "✓ Complete" : statusLabel}</span>
                   <span className="workflow-chevron">{isExpanded ? "−" : "+"}</span>
                 </div>
               </button>
@@ -176,6 +178,7 @@ function renderStepDetails(stepId: string, step?: WorkflowStepResult) {
     }
     case "content-generator-agent": {
       const data = step.data as ContentStepData;
+      const generationFailed = step.status === "error";
       return (
         <div className="summary-list-stack">
           {step.status === "running" ? (
@@ -183,6 +186,14 @@ function renderStepDetails(stepId: string, step?: WorkflowStepResult) {
               <span className="loading-spinner" />
               <p className="muted" style={{ margin: 0 }}>Generating content with the configured OpenAI service...</p>
             </div>
+          ) : null}
+          {generationFailed ? (
+            <div className="badge-row">
+              <span className="badge badge-warning">Generation failed, check API key</span>
+            </div>
+          ) : null}
+          {data.generatedContent?.errorMessage ? (
+            <p className="muted" style={{ margin: 0 }}>{data.generatedContent.errorMessage}</p>
           ) : null}
           <div className="badge-row">
             <span className={`badge ${data.generatedContent?.emailSubject ? "badge-success" : ""}`}>Email ✓</span>

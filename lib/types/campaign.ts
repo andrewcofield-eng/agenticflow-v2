@@ -25,6 +25,7 @@ export type GeneratedContent = {
   model?: string;
   temperature?: number;
   tokenEstimate?: number;
+  errorMessage?: string;
 };
 
 export type ReviewSummary = {

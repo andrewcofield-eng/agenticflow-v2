@@ -96,13 +96,24 @@ export default function BuilderPage() {
       });
 
       if (!response.ok) {
-        return finalizeCampaignContext(baseContext, fallbackContent);
+        const payload = await response.json().catch(() => null);
+        const errorMessage = typeof payload?.error === "string"
+          ? payload.error
+          : "Generation failed. Check API key and content-generator route.";
+
+        return finalizeCampaignContext(baseContext, {
+          ...fallbackContent,
+          errorMessage,
+        });
       }
 
       const payload = await response.json();
       return finalizeCampaignContext(baseContext, payload.content ?? fallbackContent);
     } catch {
-      return finalizeCampaignContext(baseContext, fallbackContent);
+      return finalizeCampaignContext(baseContext, {
+        ...fallbackContent,
+        errorMessage: "Generation failed. Check API key and content-generator route.",
+      });
     }
   }
 

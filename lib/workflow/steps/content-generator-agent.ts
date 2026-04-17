@@ -43,26 +43,36 @@ export function createCompletedContentStep(
   const strategy = context.outputs.strategy;
   const audience = context.selections.selectedAudience;
   const products = context.selections.selectedProducts.map((product) => product.name).join(", ");
+  const generationFailed = Boolean(generatedContent.errorMessage);
 
   return {
     stepId: "content-generator-agent",
     stepName: "Content Generator",
-    status: "complete",
+    status: generationFailed ? "error" : "complete",
     inputSummary: [
       `Campaign angle: ${strategy?.campaignAngle ?? "None"}`,
       `Audience: ${audience?.name ?? "None"}`,
       `Products: ${products || "None"}`,
     ],
-    outputSummary: ["Email subject and body drafted", "Social post drafted", "Paid ad copy drafted"],
-    reasoning: [
-      "Content is derived from the orchestrator-selected audience, products, strategy, and CTA.",
-      generatedContent.source === "ai-generated"
-        ? "This pass uses direct OpenAI generation with a marketing-focused prompt."
-        : "This pass used the placeholder fallback because AI generation was unavailable.",
-    ],
-    assumptions: [generatedContent.source === "ai-generated"
-      ? "AI-generated drafts should still be reviewed for brand tone and factual accuracy."
-      : "Content tone and phrasing are placeholders and should be human-edited before real use."],
+    outputSummary: generationFailed
+      ? [generatedContent.errorMessage ?? "Generation failed", "Placeholder fallback preserved for UI continuity"]
+      : ["Email subject and body drafted", "Social post drafted", "Paid ad copy drafted"],
+    reasoning: generationFailed
+      ? [
+        "Content generation failed before a valid AI response was returned.",
+        generatedContent.errorMessage ?? "The API route returned a non-OK response.",
+      ]
+      : [
+        "Content is derived from the orchestrator-selected audience, products, strategy, and CTA.",
+        generatedContent.source === "ai-generated"
+          ? "This pass uses direct OpenAI generation with a marketing-focused prompt."
+          : "This pass used the placeholder fallback because AI generation was unavailable.",
+      ],
+    assumptions: generationFailed
+      ? ["Placeholder content is kept only to preserve the dashboard shape after a generation failure."]
+      : [generatedContent.source === "ai-generated"
+        ? "AI-generated drafts should still be reviewed for brand tone and factual accuracy."
+        : "Content tone and phrasing are placeholders and should be human-edited before real use."],
     confidence: "medium",
     data: {
       generatedContent,
