@@ -51,7 +51,7 @@ export default function BuilderPage() {
   }, [context, isGeneratingContent, isRunning, revealedSteps]);
 
   async function handleGenerate() {
-    const pendingContext = runOrchestratorUntilPendingContent(formValue);
+    const pendingContext = await runOrchestratorUntilPendingContent(formValue);
     setContext(pendingContext);
     setRevealedSteps(0);
     setIsRunning(true);

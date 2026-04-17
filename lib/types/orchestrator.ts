@@ -4,7 +4,7 @@ import type { CampaignInput, GeneratedContent, ReviewSummary, StrategyOutput } f
 import type { Product } from "@/lib/types/product";
 import type { OrchestratorStatus, WorkflowStepResult } from "@/lib/types/workflow";
 
-export type SourceMode = "mock" | "hubspot" | "directus" | "cloudinary" | "mixed";
+export type SourceMode = "mock" | "live" | "mixed";
 
 export type CampaignContext = {
   input: CampaignInput;

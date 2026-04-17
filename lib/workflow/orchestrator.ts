@@ -1,4 +1,5 @@
-import { getMockCampaignContext } from "@/lib/data/adapters/mock";
+import { getSourceContext } from "@/lib/adapters/data-source-router";
+import type { SourceContextPayload } from "@/lib/adapters/data-source-router";
 import { createCampaignContext } from "@/lib/data/normalization/campaign-context";
 import type { CampaignInput } from "@/lib/types/campaign";
 import type { CampaignContext } from "@/lib/types/orchestrator";
@@ -9,23 +10,23 @@ import { createCompletedContentStep, createPendingContentStep, runContentGenerat
 import { runProductMatchAgent } from "@/lib/workflow/steps/product-match-agent";
 import { runReviewAgent } from "@/lib/workflow/steps/review-agent";
 
-export function runAgenticFlowOrchestrator(input: CampaignInput): CampaignContext {
-  const context = runOrchestratorThroughStrategy(input);
+export async function runAgenticFlowOrchestrator(input: CampaignInput): Promise<CampaignContext> {
+  const context = await runOrchestratorThroughStrategy(input);
 
   context.meta.status = "running-content-step";
   const contentStep = runContentGeneratorAgent(context);
   return finalizeCampaignContext(context, contentStep.data.generatedContent);
 }
 
-export function runOrchestratorThroughStrategy(input: CampaignInput): CampaignContext {
-  const mockContext = getMockCampaignContext();
+export async function runOrchestratorThroughStrategy(input: CampaignInput): Promise<CampaignContext> {
+  const sourceContext = await loadSourceContext();
 
   const context = createCampaignContext({
     input,
-    audiences: mockContext.audiences,
-    products: mockContext.products,
-    assets: mockContext.assets,
-    sourceMode: "mock",
+    audiences: sourceContext.candidates.audiences,
+    products: sourceContext.candidates.products,
+    assets: sourceContext.candidates.assets,
+    sourceMode: sourceContext.sourceMode,
   });
 
   context.meta.status = "running-audience-step";
@@ -51,8 +52,8 @@ export function runOrchestratorThroughStrategy(input: CampaignInput): CampaignCo
   return context;
 }
 
-export function runOrchestratorUntilPendingContent(input: CampaignInput): CampaignContext {
-  const context = runOrchestratorThroughStrategy(input);
+export async function runOrchestratorUntilPendingContent(input: CampaignInput): Promise<CampaignContext> {
+  const context = await runOrchestratorThroughStrategy(input);
   context.meta.status = "running-content-step";
   context.trace.workflowSteps.push(createPendingContentStep(context));
   return context;
@@ -74,11 +75,32 @@ export function finalizeCampaignContext(context: CampaignContext, generatedConte
   nextContext.trace.workflowSteps.push(reviewStep);
 
   nextContext.trace.assumptions = uniqueStrings(nextContext.trace.workflowSteps.flatMap((step) => step.assumptions));
-  nextContext.trace.warnings = ["Mock-only orchestration run. Live source integrations are not active in this phase."];
+  nextContext.trace.warnings = nextContext.meta.sourceMode === "mock"
+    ? ["Mock-only orchestration run. Live source integrations are not active in this phase."]
+    : nextContext.meta.sourceMode === "mixed"
+      ? ["Some live source fetches fell back to mock data for this run."]
+      : [];
   nextContext.trace.humanReviewRequired = true;
   nextContext.meta.status = "complete";
 
   return nextContext;
+}
+
+async function loadSourceContext(): Promise<SourceContextPayload> {
+  if (typeof window === "undefined") {
+    return getSourceContext();
+  }
+
+  const response = await fetch("/api/source-context", {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to load source context.");
+  }
+
+  return response.json() as Promise<SourceContextPayload>;
 }
 
 function uniqueStrings(values: string[]) {
