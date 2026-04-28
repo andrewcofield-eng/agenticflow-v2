@@ -11,8 +11,8 @@ import { campaignGoals, campaignSegments, channelThemes, productFocuses } from "
 import type { CampaignInput, GeneratedContent } from "@/lib/types/campaign";
 import type { CampaignContext } from "@/lib/types/orchestrator";
 import type { WorkflowStepResult } from "@/lib/types/workflow";
+import { finalizeCampaignContext, type OrchestratorSourceContext, runOrchestratorUntilPendingContent } from "@/lib/workflow/orchestrator";
 import { buildPlaceholderContent } from "@/lib/workflow/steps/content-generator-agent";
-import { finalizeCampaignContext, runOrchestratorUntilPendingContent } from "@/lib/workflow/orchestrator";
 
 const initialInput: CampaignInput = {
   campaignGoal: campaignGoals[0],
@@ -51,7 +51,8 @@ export default function BuilderPage() {
   }, [context, isGeneratingContent, isRunning, revealedSteps]);
 
   async function handleGenerate() {
-    const pendingContext = await runOrchestratorUntilPendingContent(formValue);
+    const sourceContext = await loadSourceContext();
+    const pendingContext = await runOrchestratorUntilPendingContent(formValue, sourceContext);
     setContext(pendingContext);
     setRevealedSteps(0);
     setIsRunning(true);
@@ -115,6 +116,23 @@ export default function BuilderPage() {
         errorMessage: "Generation failed. Check API key and content-generator route.",
       });
     }
+  }
+
+  async function loadSourceContext(): Promise<OrchestratorSourceContext> {
+    const response = await fetch("/api/source-context", {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to load source context.");
+    }
+
+    const payload = await response.json() as OrchestratorSourceContext;
+    return {
+      candidates: payload.candidates,
+      sourceMode: payload.sourceMode,
+    };
   }
 
   return (

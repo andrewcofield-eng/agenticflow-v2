@@ -1,8 +1,9 @@
-import { getSourceContext } from "@/lib/adapters/data-source-router";
-import type { SourceContextPayload } from "@/lib/adapters/data-source-router";
 import { createCampaignContext } from "@/lib/data/normalization/campaign-context";
 import type { CampaignInput } from "@/lib/types/campaign";
-import type { CampaignContext } from "@/lib/types/orchestrator";
+import type { CampaignContext, SourceMode } from "@/lib/types/orchestrator";
+import type { Asset } from "@/lib/types/asset";
+import type { Audience } from "@/lib/types/audience";
+import type { Product } from "@/lib/types/product";
 import { runAssetSelectionAgent } from "@/lib/workflow/steps/asset-selection-agent";
 import { runAudienceAgent } from "@/lib/workflow/steps/audience-agent";
 import { runCampaignStrategistAgent } from "@/lib/workflow/steps/campaign-strategist-agent";
@@ -10,17 +11,30 @@ import { createCompletedContentStep, createPendingContentStep, runContentGenerat
 import { runProductMatchAgent } from "@/lib/workflow/steps/product-match-agent";
 import { runReviewAgent } from "@/lib/workflow/steps/review-agent";
 
-export async function runAgenticFlowOrchestrator(input: CampaignInput): Promise<CampaignContext> {
-  const context = await runOrchestratorThroughStrategy(input);
+export type OrchestratorSourceContext = {
+  candidates: {
+    products: Product[];
+    assets: Asset[];
+    audiences: Audience[];
+  };
+  sourceMode: SourceMode;
+};
+
+export async function runAgenticFlowOrchestrator(
+  input: CampaignInput,
+  sourceContext: OrchestratorSourceContext,
+): Promise<CampaignContext> {
+  const context = await runOrchestratorThroughStrategy(input, sourceContext);
 
   context.meta.status = "running-content-step";
   const contentStep = runContentGeneratorAgent(context);
   return finalizeCampaignContext(context, contentStep.data.generatedContent);
 }
 
-export async function runOrchestratorThroughStrategy(input: CampaignInput): Promise<CampaignContext> {
-  const sourceContext = await loadSourceContext();
-
+export async function runOrchestratorThroughStrategy(
+  input: CampaignInput,
+  sourceContext: OrchestratorSourceContext,
+): Promise<CampaignContext> {
   const context = createCampaignContext({
     input,
     audiences: sourceContext.candidates.audiences,
@@ -52,8 +66,11 @@ export async function runOrchestratorThroughStrategy(input: CampaignInput): Prom
   return context;
 }
 
-export async function runOrchestratorUntilPendingContent(input: CampaignInput): Promise<CampaignContext> {
-  const context = await runOrchestratorThroughStrategy(input);
+export async function runOrchestratorUntilPendingContent(
+  input: CampaignInput,
+  sourceContext: OrchestratorSourceContext,
+): Promise<CampaignContext> {
+  const context = await runOrchestratorThroughStrategy(input, sourceContext);
   context.meta.status = "running-content-step";
   context.trace.workflowSteps.push(createPendingContentStep(context));
   return context;
@@ -84,23 +101,6 @@ export function finalizeCampaignContext(context: CampaignContext, generatedConte
   nextContext.meta.status = "complete";
 
   return nextContext;
-}
-
-async function loadSourceContext(): Promise<SourceContextPayload> {
-  if (typeof window === "undefined") {
-    return getSourceContext();
-  }
-
-  const response = await fetch("/api/source-context", {
-    method: "GET",
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to load source context.");
-  }
-
-  return response.json() as Promise<SourceContextPayload>;
 }
 
 function uniqueStrings(values: string[]) {
