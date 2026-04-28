@@ -1,5 +1,6 @@
 import type { Asset } from "@/lib/types/asset";
 import type { Audience } from "@/lib/types/audience";
+import type { BrandContext } from "@/lib/types/brand";
 import type { CampaignInput, GeneratedContent, ReviewSummary, StrategyOutput } from "@/lib/types/campaign";
 import type { Product } from "@/lib/types/product";
 import type { OrchestratorStatus, WorkflowStepResult } from "@/lib/types/workflow";
@@ -13,6 +14,8 @@ export type CampaignContext = {
     products: Product[];
     assets: Asset[];
   };
+  brandContext?: BrandContext;
+  brandSourceMode?: "live" | "mock";
   selections: {
     selectedAudience?: Audience;
     selectedProducts: Product[];

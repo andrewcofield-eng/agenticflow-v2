@@ -2,6 +2,7 @@ import PageHeader from "@/components/ui/pageheader";
 import SectionCard from "@/components/ui/sectioncard";
 import type { CampaignContext } from "@/lib/types/orchestrator";
 import ContentDraftCard from "./contentdraftcard";
+import HtmlPreviewCard from "./htmlpreviewcard";
 import ReviewStatusCard from "./reviewstatuscard";
 import StrategyCard from "./strategycard";
 
@@ -76,7 +77,7 @@ export default function ResultsDashboardShell({ context, isGeneratingContent = f
       <PageHeader
         eyebrow="Results dashboard"
         title="Campaign package assembled by the orchestrator"
-        description="This dashboard shows the selected audience, products, assets, strategy, draft content, and final review state."
+        description="This dashboard shows the selected audience, products, assets, strategy, draft content, branded HTML previews, and final review state."
       />
 
       {!context ? (
@@ -123,6 +124,24 @@ export default function ResultsDashboardShell({ context, isGeneratingContent = f
               isLoading={isGeneratingContent}
               onRegenerate={onRegenerateContent}
               canRegenerate={canRegenerateContent}
+            />
+            <HtmlPreviewCard
+              artifact={context.outputs.generatedContent?.emailHtml}
+              audience={context.selections.selectedAudience}
+              products={context.selections.selectedProducts}
+              asset={context.selections.selectedAssets[0]}
+              brandName={context.brandContext?.brandName}
+              brandSourceMode={context.brandSourceMode}
+              copySource={context.outputs.generatedContent?.source}
+            />
+            <HtmlPreviewCard
+              artifact={context.outputs.generatedContent?.landingPageHtml}
+              audience={context.selections.selectedAudience}
+              products={context.selections.selectedProducts}
+              asset={context.selections.selectedAssets[0]}
+              brandName={context.brandContext?.brandName}
+              brandSourceMode={context.brandSourceMode}
+              copySource={context.outputs.generatedContent?.source}
             />
             <ReviewStatusCard reviewSummary={context.outputs.reviewSummary} />
           </div>

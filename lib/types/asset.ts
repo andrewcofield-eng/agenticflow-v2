@@ -9,4 +9,7 @@ export type Asset = {
   toneStyle: string;
   usageStatus: string;
   campaignFit: string[];
+  imageUrl?: string;
+  publicId?: string;
+  cloudName?: string;
 };

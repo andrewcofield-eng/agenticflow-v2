@@ -19,6 +19,8 @@ export default function ContentDraftCard({ content, isLoading = false, onRegener
                 {content.source === "ai-generated" ? "AI-generated" : "Placeholder"}
               </span>
               {content.tokenEstimate ? <span className="badge badge-subtle">~{content.tokenEstimate} tokens</span> : null}
+              {content.emailHtml ? <span className="badge badge-subtle">Email HTML ready</span> : null}
+              {content.landingPageHtml ? <span className="badge badge-subtle">Landing HTML ready</span> : null}
             </div>
           ) : null}
         </div>

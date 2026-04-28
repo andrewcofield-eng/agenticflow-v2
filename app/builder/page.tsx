@@ -132,11 +132,14 @@ export default function BuilderPage() {
       throw new Error("Failed to load source context.");
     }
 
-    const payload = await response.json() as OrchestratorSourceContext;
+    const payload = await response.json() as OrchestratorSourceContext & {
+      sourceStatuses?: Array<{ source: string; mode: "live" | "mock" }>;
+    };
     return {
       candidates: payload.candidates,
       sourceMode: payload.sourceMode,
       brandContext: payload.brandContext,
+      brandSourceMode: payload.sourceStatuses?.find((status) => status.source === "brand")?.mode ?? "mock",
     };
   }
 

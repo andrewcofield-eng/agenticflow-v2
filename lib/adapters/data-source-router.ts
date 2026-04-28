@@ -230,6 +230,9 @@ function mapAssetRecordToAsset(record: AssetRecord): Asset {
     toneStyle: record.toneStyle,
     usageStatus: record.usageStatus,
     campaignFit: record.campaignFit,
+    imageUrl: record.imageUrl,
+    publicId: record.publicId,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME?.trim() || "dp0cdq8bj",
   };
 }
 

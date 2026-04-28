@@ -1,9 +1,11 @@
 import { createCampaignContext } from "@/lib/data/normalization/campaign-context";
-import type { CampaignInput } from "@/lib/types/campaign";
-import type { CampaignContext, SourceMode } from "@/lib/types/orchestrator";
-import type { BrandContext } from "@/lib/types/brand";
+import { renderEmailHtml } from "@/lib/renderers/email-html-renderer";
+import { renderLandingPageHtml } from "@/lib/renderers/landing-page-renderer";
 import type { Asset } from "@/lib/types/asset";
 import type { Audience } from "@/lib/types/audience";
+import type { BrandContext } from "@/lib/types/brand";
+import type { CampaignInput, GeneratedContent } from "@/lib/types/campaign";
+import type { CampaignContext, SourceMode } from "@/lib/types/orchestrator";
 import type { Product } from "@/lib/types/product";
 import { runAssetSelectionAgent } from "@/lib/workflow/steps/asset-selection-agent";
 import { runAudienceAgent } from "@/lib/workflow/steps/audience-agent";
@@ -20,6 +22,7 @@ export type OrchestratorSourceContext = {
   };
   sourceMode: SourceMode;
   brandContext?: BrandContext;
+  brandSourceMode?: "live" | "mock";
 };
 
 export async function runAgenticFlowOrchestrator(
@@ -43,6 +46,8 @@ export async function runOrchestratorThroughStrategy(
     products: sourceContext.candidates.products,
     assets: sourceContext.candidates.assets,
     sourceMode: sourceContext.sourceMode,
+    brandContext: sourceContext.brandContext,
+    brandSourceMode: sourceContext.brandSourceMode,
   });
 
   context.meta.status = "running-audience-step";
@@ -78,11 +83,12 @@ export async function runOrchestratorUntilPendingContent(
   return context;
 }
 
-export function finalizeCampaignContext(context: CampaignContext, generatedContent: import("@/lib/types/campaign").GeneratedContent): CampaignContext {
+export function finalizeCampaignContext(context: CampaignContext, generatedContent: GeneratedContent): CampaignContext {
   const nextContext: CampaignContext = JSON.parse(JSON.stringify(context));
-  const completedContentStep = createCompletedContentStep(nextContext, generatedContent);
+  const contentWithArtifacts = buildRenderedArtifacts(nextContext, generatedContent);
+  const completedContentStep = createCompletedContentStep(nextContext, contentWithArtifacts);
 
-  nextContext.outputs.generatedContent = generatedContent;
+  nextContext.outputs.generatedContent = contentWithArtifacts;
   nextContext.trace.workflowSteps = nextContext.trace.workflowSteps.filter(
     (step) => step.stepId !== "content-generator-agent" && step.stepId !== "review-agent",
   );
@@ -103,6 +109,35 @@ export function finalizeCampaignContext(context: CampaignContext, generatedConte
   nextContext.meta.status = "complete";
 
   return nextContext;
+}
+
+function buildRenderedArtifacts(context: CampaignContext, generatedContent: GeneratedContent): GeneratedContent {
+  const brand = context.brandContext;
+  if (!brand) {
+    return generatedContent;
+  }
+
+  const heroAsset = context.selections.selectedAssets[0];
+
+  return {
+    ...generatedContent,
+    emailHtml: renderEmailHtml({
+      brand,
+      audience: context.selections.selectedAudience,
+      products: context.selections.selectedProducts,
+      heroAsset,
+      strategy: context.outputs.strategy,
+      content: generatedContent,
+    }),
+    landingPageHtml: renderLandingPageHtml({
+      brand,
+      audience: context.selections.selectedAudience,
+      products: context.selections.selectedProducts,
+      heroAsset,
+      strategy: context.outputs.strategy,
+      content: generatedContent,
+    }),
+  };
 }
 
 function uniqueStrings(values: string[]) {

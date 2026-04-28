@@ -1,3 +1,5 @@
+import type { HtmlArtifact } from "@/lib/types/renderers";
+
 export type CampaignInput = {
   campaignGoal: string;
   selectedSegmentName: string;
@@ -21,6 +23,8 @@ export type GeneratedContent = {
   socialPost: string;
   adHeadline: string;
   adCopy: string;
+  emailHtml?: HtmlArtifact;
+  landingPageHtml?: HtmlArtifact;
   source?: "ai-generated" | "placeholder";
   model?: string;
   temperature?: number;
