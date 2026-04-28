@@ -7,7 +7,7 @@ export default function CampaignBuilderShell() {
       <PageHeader
         eyebrow="Campaign builder"
         title="Set up the campaign brief"
-        description="Set the campaign goal, segment, product focus, and theme, then let the AgenticFlow Orchestrator assemble a supervised campaign package from mock context."
+        description="Set the campaign goal, segment, product focus, and theme, then let the AgenticFlow Orchestrator assemble a supervised campaign package from connected CRM, PIM, and DAM context."
       />
     </SectionCard>
   );

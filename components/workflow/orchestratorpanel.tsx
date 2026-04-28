@@ -19,7 +19,7 @@ export default function OrchestratorPanel({ steps, isRunning, currentStepIndex }
         <span className="badge">{isRunning ? "Running orchestration" : "Complete"}</span>
       </div>
       <p className="muted">
-        The orchestrator assembles normalized mock context, runs specialist modules in sequence, and records reasoning for each decision.
+        The orchestrator assembles normalized CRM, PIM, and DAM context, runs specialist modules in sequence, and records reasoning for each decision.
       </p>
     </div>
   );

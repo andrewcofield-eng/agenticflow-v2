@@ -93,7 +93,7 @@ export function finalizeCampaignContext(context: CampaignContext, generatedConte
 
   nextContext.trace.assumptions = uniqueStrings(nextContext.trace.workflowSteps.flatMap((step) => step.assumptions));
   nextContext.trace.warnings = nextContext.meta.sourceMode === "mock"
-    ? ["Mock-only orchestration run. Live source integrations are not active in this phase."]
+    ? ["Live source integrations are disabled for this run, so the orchestrator used mock fallback data."]
     : nextContext.meta.sourceMode === "mixed"
       ? ["Some live source fetches fell back to mock data for this run."]
       : [];

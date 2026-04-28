@@ -142,7 +142,7 @@ export default function BuilderPage() {
           <p className="eyebrow">Prototype Workspace</p>
           <h1>AgenticFlow Orchestrator demo</h1>
           <p className="muted">
-            This mock-only Phase 3 slice wires up a central orchestrator, deterministic selection logic, visible workflow progression, and a structured reasoning panel.
+            This Phase 3 slice wires up a live-source campaign orchestration flow with deterministic matching, visible workflow progression, AI-generated drafts, and structured human review.
           </p>
         </section>
 

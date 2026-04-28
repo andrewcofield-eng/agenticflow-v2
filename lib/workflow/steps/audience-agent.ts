@@ -66,7 +66,7 @@ export function runAudienceAgent(context: CampaignContext): WorkflowStepResult<A
     ],
     outputSummary: [`Selected audience: ${top.audience.name}`, `Selection score: ${top.score}`],
     reasoning: top.reasons,
-    assumptions: ["Audience fit is based on simplified mock metadata and tag overlap."],
+    assumptions: ["Audience fit is based on deterministic scoring over normalized source records and tag overlap."],
     confidence: top.score >= 7 ? "high" : top.score >= 4 ? "medium" : "low",
     data: {
       selectedAudience: top.audience,

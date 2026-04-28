@@ -23,7 +23,7 @@ export function runCampaignStrategistAgent(context: CampaignContext): WorkflowSt
       `The strategy centers on ${audience?.name ?? "the chosen audience"} because it had the strongest fit score in the orchestration flow.`,
       `Messaging highlights ${productNames || "the selected products"} because those products ranked highest for audience and goal alignment.`,
       `The recommended channel mix is framed from the selected theme and available asset suitability data.`,
-      `This version uses placeholder strategy language to keep the orchestration flow stable in the mock-only MVP.`,
+      `This strategy draft uses connected source context to frame the campaign angle, channel mix, and CTA recommendation.`,
     ],
   };
 
@@ -43,7 +43,7 @@ export function runCampaignStrategistAgent(context: CampaignContext): WorkflowSt
       `Channels: ${strategy.suggestedChannelMix.join(", ")}`,
     ],
     reasoning: strategy.strategyRationale,
-    assumptions: ["Strategy wording is placeholder-generated in this pass rather than model-generated."],
+    assumptions: ["Strategy wording is generated as a source-aware draft for human review."],
     confidence: "medium",
     data: {
       strategy,

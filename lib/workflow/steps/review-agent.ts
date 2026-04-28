@@ -8,10 +8,10 @@ type ReviewStepData = {
 
 export function runReviewAgent(context: CampaignContext): WorkflowStepResult<ReviewStepData> {
   const assumptions = [
-    "Audience fit uses simplified mock CRM metadata.",
-    "Product ranking is based on tag alignment, not live performance data.",
-    "Asset selection is based on simplified DAM metadata.",
-    "Strategy and content use placeholder generation in this MVP pass.",
+    "Audience fit is derived from normalized CRM records and deterministic tag overlap.",
+    "Product ranking is based on deterministic matching over normalized PIM records.",
+    "Asset selection is based on normalized DAM metadata and product association signals.",
+    "Strategy and content drafts should be reviewed by a human before activation.",
   ];
 
   const checklist = [
@@ -24,7 +24,7 @@ export function runReviewAgent(context: CampaignContext): WorkflowStepResult<Rev
 
   const reviewSummary: ReviewSummary = {
     completenessSummary: "Campaign package includes audience, products, assets, strategy, content drafts, and rationale trace.",
-    consistencySummary: "Selected products and assets align with the recommended audience and campaign objective using the mock scoring rules.",
+    consistencySummary: "Selected products and assets align with the recommended audience and campaign objective using deterministic scoring over normalized source records.",
     assumptionsList: assumptions,
     humanReviewChecklist: checklist,
     finalReviewStatus: "ready-for-review",

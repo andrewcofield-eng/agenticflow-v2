@@ -84,9 +84,9 @@ export default function CampaignFormShell({ value, onChange, onGenerate, isRunni
         <h3>What this form does in Phase 3</h3>
         <ul className="list">
           <li>Captures the campaign intent for the orchestrator</li>
-          <li>Runs a full mock-only end-to-end orchestration flow</li>
+          <li>Runs a live-source campaign orchestration flow with mock fallback</li>
           <li>Uses deterministic selection for audience, product, and asset choices</li>
-          <li>Uses placeholder strategy and content generation to keep the prototype stable</li>
+          <li>Uses a source-aware strategy draft and AI-generated content with human review</li>
         </ul>
       </div>
     </div>
