@@ -46,7 +46,7 @@ export async function getDirectusProducts(options?: { forceRefresh?: boolean }):
     const baseUrl = (process.env.DIRECTUS_URL?.trim() || DEFAULT_DIRECTUS_URL).replace(/\/$/, "");
     const token = process.env.DIRECTUS_TOKEN?.trim();
     const url = `${baseUrl}/items/products?limit=100`;
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       Accept: "application/json",
       "Content-Type": "application/json",
     };
