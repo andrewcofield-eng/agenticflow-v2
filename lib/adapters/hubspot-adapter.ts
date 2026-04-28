@@ -81,16 +81,25 @@ const hubSpotFallbackAudiences: AudienceSegment[] = [
 ];
 
 type HubSpotWarmProspect = {
-  company?: string | null;
+  company_name?: string | null;
   industry?: string | null;
-  abm_score?: number | string | null;
-  deal_value?: number | string | null;
-  stage?: string | null;
-  contact_name?: string | null;
-  pain_points?: string[] | string | null;
-  use_case?: string | null;
+  engagement_score?: number | string | null;
+  account_value?: string | null;
   buying_stage?: string | null;
+  contact?: {
+    name?: string | null;
+    title?: string | null;
+    email?: string | null;
+  } | null;
+  actions?: Record<string, number> | null;
 };
+
+type HubSpotWarmProspectsResponse =
+  | HubSpotWarmProspect[]
+  | {
+    prospects?: HubSpotWarmProspect[];
+    data?: HubSpotWarmProspect[];
+  };
 
 export async function getHubSpotAudiences(options?: { forceRefresh?: boolean }): Promise<SourceLoadResult<AudienceSegment>> {
   if (!options?.forceRefresh) {
@@ -102,16 +111,12 @@ export async function getHubSpotAudiences(options?: { forceRefresh?: boolean }):
 
   try {
     const baseUrl = (process.env.HUBSPOT_PROXY_URL?.trim() || DEFAULT_HUBSPOT_PROXY_URL).replace(/\/$/, "");
-    const directusUrl = process.env.DIRECTUS_URL?.trim() ?? "";
-    const directusToken = process.env.DIRECTUS_TOKEN?.trim() ?? "";
     const url = new URL(`${baseUrl}/abm/warm-prospects`);
-    url.searchParams.set("directus_url", directusUrl);
-    url.searchParams.set("directus_token", directusToken);
-    console.log("[hubspot-adapter] Fetching", {
-      url: url.toString(),
-      hasDirectusUrlParam: Boolean(directusUrl),
-      hasDirectusTokenParam: Boolean(directusToken),
-    });
+    url.searchParams.set("directus_url", process.env.DIRECTUS_URL ?? "");
+    url.searchParams.set("directus_token", process.env.DIRECTUS_TOKEN ?? "");
+
+    console.log("[hubspot-adapter] Fetching", url.toString());
+
     const response = await fetch(url.toString(), {
       method: "GET",
       headers: {
@@ -124,7 +129,7 @@ export async function getHubSpotAudiences(options?: { forceRefresh?: boolean }):
       throw new Error(`HubSpot proxy request failed with status ${response.status}`);
     }
 
-    const json = await response.json() as HubSpotWarmProspect[] | { prospects?: HubSpotWarmProspect[]; data?: HubSpotWarmProspect[] };
+    const json = await response.json() as HubSpotWarmProspectsResponse;
     const prospects = Array.isArray(json)
       ? json
       : Array.isArray(json?.prospects)
@@ -133,7 +138,7 @@ export async function getHubSpotAudiences(options?: { forceRefresh?: boolean }):
           ? json.data
           : null;
 
-    if (!prospects) {
+    if (!prospects || prospects.length === 0) {
       throw new Error("Unexpected HubSpot response shape");
     }
 
@@ -167,30 +172,30 @@ export function clearHubSpotAudiencesCache() {
 }
 
 function normalizeHubSpotAudience(record: HubSpotWarmProspect): AudienceSegment {
-  const abmScore = parseNumber(record.abm_score);
-  const painPoints = toStringArray(record.pain_points);
+  const abmScore = parseNumber(record.engagement_score);
+  const intentSignals = actionsToSignals(record.actions);
+  const companyName = safeString(record.company_name, "Unknown account");
+  const buyingStage = safeString(record.buying_stage, "Unknown");
   const productInterestTags = Array.from(new Set([
-    ...painPoints,
-    safeString(record.use_case),
+    ...intentSignals,
     safeString(record.industry),
-    safeString(record.buying_stage),
+    buyingStage,
   ].filter(Boolean)));
 
   return {
-    id: slugify(record.company ?? "unknown-company"),
-    name: safeString(record.company, "Unknown account"),
-    lifecycleStage: safeString(record.stage, "Unknown"),
+    id: slugify(record.company_name ?? "unknown-company"),
+    name: companyName,
+    lifecycleStage: buyingStage,
     description: buildDescription(record),
     size: "B2B account",
     engagementLevel: deriveEngagementLevel(abmScore),
-    intentSignals: painPoints.length > 0 ? painPoints : [safeString(record.use_case, "General interest")],
-    estimatedValue: formatCurrency(record.deal_value),
+    intentSignals,
+    estimatedValue: formatCurrency(record.account_value),
     region: "Unknown",
     productInterestTags,
     industry: safeString(record.industry),
-    contactName: safeString(record.contact_name),
-    useCase: safeString(record.use_case),
-    buyingStage: safeString(record.buying_stage),
+    contactName: safeString(record.contact?.name),
+    buyingStage,
     abmScore,
   };
 }
@@ -239,32 +244,23 @@ function formatCurrency(value: string | number | null | undefined) {
 }
 
 function buildDescription(record: HubSpotWarmProspect) {
-  const company = safeString(record.company, "This account");
+  const company = safeString(record.company_name, "This account");
   const industry = safeString(record.industry, "unknown industry");
-  const useCase = safeString(record.use_case, "general use case");
-  return `${company} is a ${industry} account aligned to ${useCase}.`;
+  const buyingStage = safeString(record.buying_stage, "unknown stage");
+  return `${company} is a ${industry} account currently in ${buyingStage}.`;
 }
 
-function toStringArray(value: string[] | string | null | undefined) {
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => item?.toString().trim())
-      .filter((item): item is string => Boolean(item));
+function actionsToSignals(actions: Record<string, number> | null | undefined) {
+  if (!actions) {
+    return ["General interest"];
   }
 
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return [];
-    }
-
-    return trimmed
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
+  const entries = Object.entries(actions).filter(([, count]) => typeof count === "number" && count > 0);
+  if (entries.length === 0) {
+    return ["General interest"];
   }
 
-  return [];
+  return entries.map(([action, count]) => `${action} (${count})`);
 }
 
 function safeString(value: string | null | undefined, fallback = "") {
