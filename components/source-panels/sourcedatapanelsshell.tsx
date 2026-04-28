@@ -5,13 +5,14 @@ import PageHeader from "@/components/ui/pageheader";
 import SectionCard from "@/components/ui/sectioncard";
 import { mockAssets } from "@/lib/data/mock-data/assets";
 import { mockAudiences } from "@/lib/data/mock-data/audiences";
+import { mockBrandContext } from "@/lib/data/mock-data/brand-guidelines";
 import { mockProducts } from "@/lib/data/mock-data/products";
 import SourcePanelCard from "./sourcepanelcard";
 
 type SourceMode = "live" | "mock";
 
 type SourceStatus = {
-  source: "directus" | "cloudinary" | "hubspot";
+  source: "directus" | "cloudinary" | "hubspot" | "brand";
   mode: SourceMode;
   count: number;
   lastRefreshed: string;
@@ -23,12 +24,20 @@ type SourceContextResponse = {
     products: { name: string }[];
     assets: { title: string }[];
     audiences: { name: string }[];
+    brand: {
+      brandName: string;
+      logoCount: number;
+      colorCount: number;
+      typographyCount: number;
+      toneAttributes: string[];
+    };
   };
   sourceStatuses: SourceStatus[];
   recordCounts: {
     products: number;
     assets: number;
     audiences: number;
+    brand: number;
   };
 };
 
@@ -36,6 +45,7 @@ type SourcePanelState = {
   products: string[];
   assets: string[];
   audiences: string[];
+  brand: string[];
   statuses: Record<SourceStatus["source"], SourceStatus>;
 };
 
@@ -43,10 +53,18 @@ const fallbackState: SourcePanelState = {
   products: mockProducts.map((product) => product.name),
   assets: mockAssets.map((asset) => asset.title),
   audiences: mockAudiences.map((audience) => audience.name),
+  brand: buildBrandItems({
+    brandName: mockBrandContext.brandName,
+    logoCount: mockBrandContext.logos.length,
+    colorCount: mockBrandContext.colors.length,
+    typographyCount: mockBrandContext.typography.length,
+    toneAttributes: mockBrandContext.voice.toneAttributes,
+  }),
   statuses: {
     directus: { source: "directus", mode: "mock", count: mockProducts.length, lastRefreshed: new Date(0).toISOString() },
     cloudinary: { source: "cloudinary", mode: "mock", count: mockAssets.length, lastRefreshed: new Date(0).toISOString() },
     hubspot: { source: "hubspot", mode: "mock", count: mockAudiences.length, lastRefreshed: new Date(0).toISOString() },
+    brand: { source: "brand", mode: "mock", count: 1, lastRefreshed: new Date(0).toISOString() },
   },
 };
 
@@ -113,8 +131,8 @@ export default function SourceDataPanelsShell() {
     <SectionCard>
       <PageHeader
         eyebrow="Source context"
-        title="Visible data inputs from CRM, PIM, and DAM"
-        description="These panels show the kinds of source records the workflow will draw from. The live adapter layer can refresh from each source independently while preserving mock fallbacks."
+        title="Visible data inputs from CRM, PIM, DAM, and Brand"
+        description="These panels show the connected source records and brand tokens the workflow will draw from. The live adapter layer can refresh each source independently while preserving mock fallbacks."
       />
 
       <div className="section-header" style={{ marginBottom: 16 }}>
@@ -154,6 +172,15 @@ export default function SourceDataPanelsShell() {
           lastRefreshed={activeStatuses.cloudinary.lastRefreshed}
           warning={activeStatuses.cloudinary.warning}
         />
+        <SourcePanelCard
+          systemName="Brand"
+          systemType="Cloudinary DAM"
+          summary="Brand identity tokens, voice guidance, CTA guidance, and compliance notes used to shape AI-generated drafts."
+          items={state.brand}
+          sourceMode={activeStatuses.brand.mode}
+          lastRefreshed={activeStatuses.brand.lastRefreshed}
+          warning={activeStatuses.brand.warning}
+        />
       </div>
     </SectionCard>
   );
@@ -164,6 +191,7 @@ function mapResponseToState(payload: SourceContextResponse): SourcePanelState {
     products: payload.normalized.products.map((product) => product.name),
     assets: payload.normalized.assets.map((asset) => asset.title),
     audiences: payload.normalized.audiences.map((audience) => audience.name),
+    brand: buildBrandItems(payload.normalized.brand),
     statuses: payload.sourceStatuses.reduce<SourcePanelState["statuses"]>((accumulator, status) => {
       accumulator[status.source] = status;
       return accumulator;
@@ -171,6 +199,17 @@ function mapResponseToState(payload: SourceContextResponse): SourcePanelState {
       directus: { source: "directus", mode: "mock", count: 0, lastRefreshed: new Date(0).toISOString() },
       cloudinary: { source: "cloudinary", mode: "mock", count: 0, lastRefreshed: new Date(0).toISOString() },
       hubspot: { source: "hubspot", mode: "mock", count: 0, lastRefreshed: new Date(0).toISOString() },
+      brand: { source: "brand", mode: "mock", count: 0, lastRefreshed: new Date(0).toISOString() },
     }),
   };
+}
+
+function buildBrandItems(brand: SourceContextResponse["normalized"]["brand"]) {
+  return [
+    `Brand: ${brand.brandName}`,
+    `Logos: ${brand.logoCount}`,
+    `Colors: ${brand.colorCount}`,
+    `Typography tokens: ${brand.typographyCount}`,
+    `Voice: ${brand.toneAttributes.slice(0, 3).join(", ") || "Not provided"}`,
+  ];
 }

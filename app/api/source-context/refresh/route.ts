@@ -11,7 +11,8 @@ export async function POST() {
     const dataUpdated =
       previous.recordCounts.products !== refreshed.recordCounts.products ||
       previous.recordCounts.assets !== refreshed.recordCounts.assets ||
-      previous.recordCounts.audiences !== refreshed.recordCounts.audiences;
+      previous.recordCounts.audiences !== refreshed.recordCounts.audiences ||
+      previous.recordCounts.brand !== refreshed.recordCounts.brand;
 
     return NextResponse.json({
       ...refreshed,

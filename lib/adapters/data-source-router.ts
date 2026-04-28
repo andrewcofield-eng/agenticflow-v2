@@ -1,11 +1,14 @@
 import { clearAllCachedValues } from "@/lib/adapters/adapter-cache";
+import { getBrandGuidelines } from "@/lib/adapters/brand-guidelines-adapter";
 import { getCloudinaryAssets } from "@/lib/adapters/cloudinary-adapter";
 import { getDirectusProducts } from "@/lib/adapters/directus-adapter";
 import { getHubSpotAudiences } from "@/lib/adapters/hubspot-adapter";
-import type { AssetRecord, AudienceSegment, ProductRecord, SourceStatus } from "@/lib/adapters/adapter-types";
+import type { AssetRecord, AudienceSegment, BrandSummary, ProductRecord, SourceStatus } from "@/lib/adapters/adapter-types";
 import { getMockCampaignContext } from "@/lib/data/adapters/mock";
+import { mockBrandContext } from "@/lib/data/mock-data/brand-guidelines";
 import type { Asset } from "@/lib/types/asset";
 import type { Audience } from "@/lib/types/audience";
+import type { BrandContext } from "@/lib/types/brand";
 import type { SourceMode } from "@/lib/types/orchestrator";
 import type { Product } from "@/lib/types/product";
 
@@ -19,13 +22,16 @@ export type SourceContextPayload = {
     products: ProductRecord[];
     assets: AssetRecord[];
     audiences: AudienceSegment[];
+    brand: BrandSummary;
   };
+  brandContext: BrandContext;
   sourceMode: SourceMode;
   sourceStatuses: SourceStatus[];
   recordCounts: {
     products: number;
     assets: number;
     audiences: number;
+    brand: number;
   };
   lastRefreshed: string;
 };
@@ -40,6 +46,7 @@ export async function getSourceContext(options?: { forceRefresh?: boolean }): Pr
   const productsResult = await getDirectusProducts({ forceRefresh: options?.forceRefresh });
   const assetsResult = await getCloudinaryAssets({ forceRefresh: options?.forceRefresh });
   const audiencesResult = await getHubSpotAudiences({ forceRefresh: options?.forceRefresh });
+  const brandResult = await getBrandGuidelines({ forceRefresh: options?.forceRefresh });
 
   const sourceStatuses: SourceStatus[] = [
     {
@@ -63,6 +70,13 @@ export async function getSourceContext(options?: { forceRefresh?: boolean }): Pr
       lastRefreshed: audiencesResult.lastRefreshed,
       warning: audiencesResult.warning,
     },
+    {
+      source: brandResult.source,
+      mode: brandResult.mode,
+      count: brandResult.records.length,
+      lastRefreshed: brandResult.lastRefreshed,
+      warning: brandResult.warning,
+    },
   ];
 
   return {
@@ -75,13 +89,16 @@ export async function getSourceContext(options?: { forceRefresh?: boolean }): Pr
       products: productsResult.records,
       assets: assetsResult.records,
       audiences: audiencesResult.records,
+      brand: brandResult.records[0] ?? buildBrandSummary(mockBrandContext),
     },
+    brandContext: brandResult.context ?? mockBrandContext,
     sourceMode: determineSourceMode(sourceStatuses),
     sourceStatuses,
     recordCounts: {
       products: productsResult.records.length,
       assets: assetsResult.records.length,
       audiences: audiencesResult.records.length,
+      brand: brandResult.records.length,
     },
     lastRefreshed: latestTimestamp(sourceStatuses.map((status) => status.lastRefreshed)),
   };
@@ -147,17 +164,21 @@ function buildMockSourceContext(): SourceContextPayload {
         region: audience.region,
         productInterestTags: audience.productInterestTags,
       })),
+      brand: buildBrandSummary(mockBrandContext),
     },
+    brandContext: mockBrandContext,
     sourceMode: "mock",
     sourceStatuses: [
       { source: "directus", mode: "mock", count: mockContext.products.length, lastRefreshed: now },
       { source: "cloudinary", mode: "mock", count: mockContext.assets.length, lastRefreshed: now },
       { source: "hubspot", mode: "mock", count: mockContext.audiences.length, lastRefreshed: now },
+      { source: "brand", mode: "mock", count: 1, lastRefreshed: now },
     ],
     recordCounts: {
       products: mockContext.products.length,
       assets: mockContext.assets.length,
       audiences: mockContext.audiences.length,
+      brand: 1,
     },
     lastRefreshed: now,
   };
@@ -224,5 +245,15 @@ function mapAudienceSegmentToAudience(record: AudienceSegment): Audience {
     estimatedValue: record.estimatedValue,
     region: record.region,
     productInterestTags: record.productInterestTags,
+  };
+}
+
+function buildBrandSummary(context: BrandContext): BrandSummary {
+  return {
+    brandName: context.brandName,
+    logoCount: context.logos.length,
+    colorCount: context.colors.length,
+    typographyCount: context.typography.length,
+    toneAttributes: context.voice.toneAttributes,
   };
 }

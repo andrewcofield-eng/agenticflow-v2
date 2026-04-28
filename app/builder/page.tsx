@@ -9,6 +9,7 @@ import SourceDataPanelsShell from "@/components/source-panels/sourcedatapanelssh
 import WorkflowVisualizationShell from "@/components/workflow/workflowvisualizationshell";
 import { campaignGoals, campaignSegments, channelThemes, productFocuses } from "@/lib/data/mock-data/campaign-presets";
 import type { CampaignInput, GeneratedContent } from "@/lib/types/campaign";
+import type { BrandContext } from "@/lib/types/brand";
 import type { CampaignContext } from "@/lib/types/orchestrator";
 import type { WorkflowStepResult } from "@/lib/types/workflow";
 import { finalizeCampaignContext, type OrchestratorSourceContext, runOrchestratorUntilPendingContent } from "@/lib/workflow/orchestrator";
@@ -28,6 +29,7 @@ export default function BuilderPage() {
   const [revealedSteps, setRevealedSteps] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
+  const [brandContext, setBrandContext] = useState<BrandContext | null>(null);
 
   const visibleSteps = useMemo<WorkflowStepResult[]>(() => {
     if (!context) return [];
@@ -52,13 +54,14 @@ export default function BuilderPage() {
 
   async function handleGenerate() {
     const sourceContext = await loadSourceContext();
+    setBrandContext(sourceContext.brandContext ?? null);
     const pendingContext = await runOrchestratorUntilPendingContent(formValue, sourceContext);
     setContext(pendingContext);
     setRevealedSteps(0);
     setIsRunning(true);
     setIsGeneratingContent(true);
 
-    const finalizedContext = await generateContentForContext(pendingContext);
+    const finalizedContext = await generateContentForContext(pendingContext, sourceContext.brandContext);
     setContext(finalizedContext);
     setIsGeneratingContent(false);
   }
@@ -67,13 +70,13 @@ export default function BuilderPage() {
     if (!context) return;
 
     setIsGeneratingContent(true);
-    const finalizedContext = await generateContentForContext(context, 0.1);
+    const finalizedContext = await generateContentForContext(context, brandContext, 0.1);
     setContext(finalizedContext);
     setIsGeneratingContent(false);
     setIsRunning(true);
   }
 
-  async function generateContentForContext(baseContext: CampaignContext, temperatureBoost = 0) {
+  async function generateContentForContext(baseContext: CampaignContext, activeBrandContext?: BrandContext | null, temperatureBoost = 0) {
     const fallbackContent: GeneratedContent = {
       ...buildPlaceholderContent(baseContext),
       temperature: 0.7 + temperatureBoost,
@@ -92,6 +95,7 @@ export default function BuilderPage() {
           strategy: baseContext.outputs.strategy,
           cta: baseContext.outputs.strategy?.ctaRecommendation,
           channels: baseContext.outputs.strategy?.suggestedChannelMix ?? [],
+          brandContext: activeBrandContext,
           temperatureBoost,
         }),
       });
@@ -132,6 +136,7 @@ export default function BuilderPage() {
     return {
       candidates: payload.candidates,
       sourceMode: payload.sourceMode,
+      brandContext: payload.brandContext,
     };
   }
 

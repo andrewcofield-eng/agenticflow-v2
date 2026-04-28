@@ -1,4 +1,6 @@
-export type DataSourceKind = "directus" | "cloudinary" | "hubspot";
+import type { BrandContext } from "@/lib/types/brand";
+
+export type DataSourceKind = "directus" | "cloudinary" | "hubspot" | "brand";
 
 export type DataSourceMode = "live" | "mock";
 
@@ -56,12 +58,21 @@ export type AudienceSegment = {
   abmScore?: number;
 };
 
+export type BrandSummary = {
+  brandName: string;
+  logoCount: number;
+  colorCount: number;
+  typographyCount: number;
+  toneAttributes: string[];
+};
+
 export type SourceLoadResult<T> = {
   records: T[];
   source: DataSourceKind;
   mode: DataSourceMode;
   lastRefreshed: string;
   warning?: string;
+  context?: BrandContext;
 };
 
 export type SourceStatus = {

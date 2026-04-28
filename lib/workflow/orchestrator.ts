@@ -1,6 +1,7 @@
 import { createCampaignContext } from "@/lib/data/normalization/campaign-context";
 import type { CampaignInput } from "@/lib/types/campaign";
 import type { CampaignContext, SourceMode } from "@/lib/types/orchestrator";
+import type { BrandContext } from "@/lib/types/brand";
 import type { Asset } from "@/lib/types/asset";
 import type { Audience } from "@/lib/types/audience";
 import type { Product } from "@/lib/types/product";
@@ -18,6 +19,7 @@ export type OrchestratorSourceContext = {
     audiences: Audience[];
   };
   sourceMode: SourceMode;
+  brandContext?: BrandContext;
 };
 
 export async function runAgenticFlowOrchestrator(
